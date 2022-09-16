@@ -1,0 +1,61 @@
+---
+title: "Monte Carlo Estimation"
+author: "Chris Santiago"
+date: "2022-09-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r setup}
+SEED = 32
+set.seed(SEED)
+
+```
+
+```{r Simulating}
+m = 1e6
+a = 2.
+b = 1. / 3.
+
+theta = rgamma(m, a, b)
+hist(theta, freq=FALSE)
+curve(dgamma(x, a, b), col="steelblue", add=TRUE)
+```
+
+```{r}
+theta.mean = mean(theta)
+theta.var = var(theta)
+theta.sd = sd(theta)
+
+cat("\n", "Estimated mean:", theta.mean, "\n", "Estimated variance:", theta.var, "\n")
+cat("\n", "True mean:", a/b, "\n", "True variance:", a/b^2, "\n")
+```
+
+```{r}
+mean(theta < 5.)
+pgamma(5., a, b)
+```
+
+```{r}
+quantile(theta, probs=.9)
+qgamma(.9, a, b)
+```
+
+```{r}
+get_std_error = function(x){
+  1.96 * sd(x) / sqrt(length(x))
+}
+
+get_std_error(theta)
+get_std_error(theta < 5)
+```
+
