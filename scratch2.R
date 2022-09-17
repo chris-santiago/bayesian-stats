@@ -13,3 +13,16 @@ gen_proposals = function(n, init_x = 1) {
 }
 
 z = gen_proposals(1e5)
+
+get_likelihood = function(x, theta){
+  dbinom(x, 5, .5) * (1-theta) + dbinom(x, 5, .7) * theta
+}
+
+f = function(theta){
+  if (theta == 1) {
+    return(.6)
+  } else {
+    return(.4)
+  }
+}
+
