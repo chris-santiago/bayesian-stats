@@ -1,0 +1,10 @@
+name: mcmc
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pymc
+  - jupyterlab
+  - python-graphviz
+prefix: /Users/christophersantiago/miniforge3/envs/mcmc
