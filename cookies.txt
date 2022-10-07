@@ -1,4 +1,4 @@
-"chips" "location"
+chips location
 12 1
 12 1
 6 1

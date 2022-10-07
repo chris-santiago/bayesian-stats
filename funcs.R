@@ -35,3 +35,13 @@ run_sim = function(model.str, data, params, n_chains=3, burn_in=1e3, n_iter=5e3)
 inv_logit = function(X, b){
   1 / (1 + exp(- X %*% b))
 }
+
+
+gg_resid = function(residuals) {
+  as_tibble(residuals) %>%
+    rename(resid=value) %>%
+    mutate(obs=seq_along(resid)) %>%
+    ggplot(aes(x=obs, y=resid)) +
+    geom_point() + 
+    geom_smooth()
+}
