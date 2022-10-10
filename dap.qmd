@@ -1,0 +1,105 @@
+---
+title: "Data Analysis Project"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both
+
+```{r}
+library(tidyverse)
+library(rjags)
+
+source("funcs.R")
+```
+
+```{r}
+data = datasets::chickwts %>%
+  mutate(
+    feed_name = feed,
+    feed = as.numeric(feed)
+    )
+```
+
+You can add options to executable code like this
+
+```{r}
+
+head(data)
+```
+
+```{r}
+
+table(data$feed_name)
+```
+
+```{r}
+
+ggplot(data, aes(x=weight)) +
+  geom_histogram(bins = 10)
+```
+
+```{r}
+
+ggplot(data, aes(x=feed_name, y=weight, group=feed_name)) +
+  geom_boxplot()
+```
+
+```{r}
+mod.base = lm(weight ~ feed_name + 0, data=data)
+summary(mod.base)
+```
+
+```{r}
+
+mod_string = " model {
+  for (i in 1:length(weight)) {
+    weight[i] ~ dnorm(theta[feed[i]], sig)
+  }
+  
+  for (j in 1:max(feed)) {
+    theta[j] ~ dnorm(mu, tau)
+  }
+  
+  mu ~ dnorm(0, 1e6)
+  prec.tau ~ dgamma(1/2.0, 1*3.0/2.0)
+  prec.sig ~ dgamma(2/2.0, 2*1.0/2.0)
+  tau = sqrt( 1.0 / prec.tau )
+  sig = sqrt( 1.0 / prec.sig )
+  
+} "
+
+set.seed(43)
+data_jags = as.list(data)
+params = c("theta", "mu", "sig")
+
+mod.1 = run_sim(
+  model.str = mod_string,
+  data = data_jags,
+  params = params
+)
+```
+
+```{r}
+
+plot(as.mcmc(mod.1$csim), ask=FALSE)
+```
+
+```{r}
+(dic.1 = dic.samples(mod.1$obj, n.iter=1e3))
+```
+
+```{r}
+
+round(mod.1$coefs, 4)
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
