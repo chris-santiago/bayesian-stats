@@ -37,11 +37,32 @@ inv_logit = function(X, b){
 }
 
 
-gg_resid = function(residuals) {
-  as_tibble(residuals) %>%
+get_resid = function(res, normalize=TRUE) {
+  if (normalize == TRUE) {
+    res = as.vector(scale(res))
+  } else {
+    res = as.vector(res)
+  }
+  return(res)
+}
+
+gg_resid = function(res, normalize=TRUE) {
+  as_tibble(get_resid(res, normalize)) %>%
     rename(resid=value) %>%
     mutate(obs=seq_along(resid)) %>%
     ggplot(aes(x=obs, y=resid)) +
     geom_point() + 
     geom_smooth()
+}
+
+gg_resid.cat = function(lab, res, normalize=FALSE) {
+  tibble(
+    label=lab,
+    resid=res
+  ) %>%
+    ggplot(aes(x=label, y=resid, group=label)) +
+    geom_boxplot() + 
+    ggtitle("Residuals") +
+    xlab("Feed") +
+    ylab("Residual")
 }

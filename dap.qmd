@@ -62,26 +62,18 @@ summary(mod.base)
 
 mod_string = " model {
   for (i in 1:length(weight)) {
-    weight[i] ~ dnorm(theta[feed[i]], sig)
+    weight[i] ~ dnorm(mu, sigma)
   }
   
-  for (j in 1:max(feed)) {
-    theta[j] ~ dnorm(mu, tau)
-  }
-  
-  mu ~ dnorm(0, 1e6)
-  prec.tau ~ dgamma(1/2.0, 1*3.0/2.0)
-  prec.sig ~ dgamma(2/2.0, 2*1.0/2.0)
-  tau = sqrt( 1.0 / prec.tau )
-  sig = sqrt( 1.0 / prec.sig )
-  
+  mu ~ dgamma(10, 1/10)
+  sigma ~ dlnorm(1, 1)
 } "
 
 set.seed(43)
 data_jags = as.list(data)
-params = c("theta", "mu", "sig")
+params = c("mu", "sigma")
 
-mod.1 = run_sim(
+mod.pooled = run_sim(
   model.str = mod_string,
   data = data_jags,
   params = params
@@ -89,12 +81,55 @@ mod.1 = run_sim(
 ```
 
 ```{r}
-
-plot(as.mcmc(mod.1$csim), ask=FALSE)
+(dic.pooled = dic.samples(mod.pooled$obj, n.iter=1e3))
 ```
 
 ```{r}
-(dic.1 = dic.samples(mod.1$obj, n.iter=1e3))
+round(mod.pooled$coefs, 4)
+```
+
+```{r}
+plot(mod.pooled$csim)
+```
+
+```{r}
+mod_string = " model {
+  for (i in 1:length(weight)) {
+    weight[i] ~ dnorm(theta[feed[i]], sigma)
+  }
+  
+  for (j in 1:max(feed)) {
+    theta[j] ~ dnorm(mu, tau)
+  }
+  
+  mu ~ dgamma(10, 1)
+  tau ~ dlnorm(1, 1)
+  sigma ~ dlnorm(1, 1)
+  
+} "
+
+set.seed(43)
+data_jags = as.list(data)
+params = c("theta", "mu", "sigma")
+
+mod.hier = run_sim(
+  model.str = mod_string,
+  data = data_jags,
+  params = params
+)
+```
+
+```{r}
+(dic.hier = dic.samples(mod.hier$obj, n.iter=1e3))
+```
+
+```{r}
+
+round(mod.hier$coefs, 4)
+```
+
+```{r}
+plot(mod.hier$csim, ask=FALSE)
 ```
 
 ```{r}
