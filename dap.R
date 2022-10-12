@@ -25,7 +25,7 @@ mod_string = " model {
   }
   
   mu ~ dnorm(0, 1/1e6)
-  prec ~ dgamma(5/2.0, 5*1.0/2.0)
+  prec ~ dexp(1)
   sigma = sqrt(1/prec)
 } "
 
@@ -68,9 +68,9 @@ mod_string = " model {
     theta[j] ~ dnorm(mu, tau)
   }
   
-  mu ~ dnorm(0, 1.0/1.0e6)
-  prec.1 ~ dgamma(5/2.0, 5*1.0/2.0)
-  prec.2 ~ dgamma(5/2.0, 5*1.0/2.0)
+  mu ~ dnorm(0, 1/1e6)
+  prec.1 ~ dexp(1)
+  prec.2 ~ dexp(1)
   tau = sqrt(1/prec.1)
   sigma = sqrt(1/prec.2)
   
@@ -109,7 +109,7 @@ mod_string = " model {
     tau[j] = sqrt(1/prec[j])
   }
   
-  prec.2 ~ dgamma(5/2.0, 5*1.0/2.0)
+  prec.2 ~ dexp(1)
   sigma = sqrt(1/prec.2)
   
 } "
@@ -132,3 +132,7 @@ plot(res)
 plot(data$feed_name, res)
 
 summary(mod.het$sim)
+
+N = 5e3
+mu.post = sample(mod.pooled$csim[, 1], N, replace = TRUE)
+z = rnorm(N, mean=mu.post, sd=rep(mod.pooled$coefs["sigma"], N))
