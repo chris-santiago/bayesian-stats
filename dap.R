@@ -151,3 +151,5 @@ z = rnorm(N, mean=theta1.post, sd=tau1.post)
 hist(z, freq = FALSE)
 min(z)
 max(z)
+
+mean(mod.het$csim[, "theta[6]"] > mod.het$csim[, "theta[1]"])
