@@ -136,3 +136,15 @@ summary(mod.het$sim)
 N = 5e3
 mu.post = sample(mod.pooled$csim[, 1], N, replace = TRUE)
 z = rnorm(N, mean=mu.post, sd=rep(mod.pooled$coefs["sigma"], N))
+
+theta1.post = sample(mod.hier$csim[, 3], N, replace = TRUE)
+sigma.post = sample(mod.hier$csim[, 2], N, replace = TRUE)
+z = rnorm(N, mean=theta1.post, sd=sigma.post)
+hist(z, freq = FALSE)
+
+theta1.post = sample(mod.het$csim[, 14], N, replace = TRUE)
+tau1.post = sample(mod.het$csim[, 8], N, replace = TRUE)
+z = rnorm(N, mean=theta1.post, sd=rep(mod.het$coefs["sigma"], N))
+hist(z, freq = FALSE)
+min(z)
+max(z)
