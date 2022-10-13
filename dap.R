@@ -21,7 +21,7 @@ summary(mod.base)
 ########## Pooled Model ###########
 mod_string = " model {
   for (i in 1:length(weight)) {
-    weight[i] ~ dnorm(mu, sigma)
+    weight[i] ~ dnorm(mu, prec)
   }
   
   mu ~ dnorm(0, 1/1e6)
@@ -61,18 +61,18 @@ ggplot(data, aes(x=feed_name, y=weight, group=feed_name)) +
 ######## Hierarchical Model ###########
 mod_string = " model {
   for (i in 1:length(weight)) {
-    weight[i] ~ dnorm(theta[feed[i]], sigma)
+    weight[i] ~ dnorm(theta[feed[i]], prec.sigma)
   }
   
   for (j in 1:max(feed)) {
-    theta[j] ~ dnorm(mu, tau)
+    theta[j] ~ dnorm(mu, prec.tau)
   }
   
   mu ~ dnorm(0, 1/1e6)
-  prec.1 ~ dexp(1)
-  prec.2 ~ dexp(1)
-  tau = sqrt(1/prec.1)
-  sigma = sqrt(1/prec.2)
+  prec.tau ~ dexp(1)
+  prec.sigma ~ dexp(1)
+  tau = sqrt(1/prec.tau)
+  sigma = sqrt(1/prec.sigma)
   
 } "
 
@@ -99,24 +99,24 @@ summary(mod.hier$sim)
 ######## Heterogeneous Model ###########
 mod_string = " model {
   for (i in 1:length(weight)) {
-    weight[i] ~ dnorm(theta[feed[i]], sigma)
+    weight[i] ~ dnorm(theta[feed[i]], prec.sigma)
   }
   
   for (j in 1:max(feed)) {
-    theta[j] ~ dnorm(mu[j], tau[j])
+    theta[j] ~ dnorm(mu[j], prec.tau[j])
     mu[j] ~ dnorm(0, 1.0/1.0e6)
-    prec[j] ~ dgamma(5/2.0, 5*1.0/2.0)
-    tau[j] = sqrt(1/prec[j])
+    prec.tau[j] ~ dexp(1)
+    tau[j] = sqrt(1/prec.tau[j])
   }
   
-  prec.2 ~ dexp(1)
-  sigma = sqrt(1/prec.2)
+  prec.sigma ~ dexp(1)
+  sigma = sqrt(1/prec.sigma)
   
 } "
 
 set.seed(43)
 data_jags = as.list(data)
-params = c("theta", "sigma", "mu", "tau")
+params = c("theta", "tau")
 
 mod.het = run_sim(
   model.str = mod_string,
@@ -127,7 +127,7 @@ mod.het = run_sim(
 round(mod.het$coefs, 4)
 plot(mod.het$csim, ask=FALSE)
 
-res = data$weight - mod.het$coefs[14:19][data$feed]
+res = data$weight - mod.het$coefs[7:12][data$feed]
 plot(res)
 plot(data$feed_name, res)
 
@@ -136,15 +136,18 @@ summary(mod.het$sim)
 N = 5e3
 mu.post = sample(mod.pooled$csim[, 1], N, replace = TRUE)
 z = rnorm(N, mean=mu.post, sd=rep(mod.pooled$coefs["sigma"], N))
+hist(z, freq=FALSE)
 
 theta1.post = sample(mod.hier$csim[, 3], N, replace = TRUE)
 sigma.post = sample(mod.hier$csim[, 2], N, replace = TRUE)
 z = rnorm(N, mean=theta1.post, sd=sigma.post)
 hist(z, freq = FALSE)
+min(z)
+max(z)
 
-theta1.post = sample(mod.het$csim[, 14], N, replace = TRUE)
-tau1.post = sample(mod.het$csim[, 8], N, replace = TRUE)
-z = rnorm(N, mean=theta1.post, sd=rep(mod.het$coefs["sigma"], N))
+theta1.post = sample(mod.het$csim[, 7], N, replace = TRUE)
+tau1.post = sample(mod.het$csim[, 1], N, replace = TRUE)
+z = rnorm(N, mean=theta1.post, sd=tau1.post)
 hist(z, freq = FALSE)
 min(z)
 max(z)
