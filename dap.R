@@ -116,7 +116,7 @@ mod_string = " model {
 
 set.seed(43)
 data_jags = as.list(data)
-params = c("theta", "tau")
+params = c("theta", "tau", "mu", "sigma")
 
 mod.het = run_sim(
   model.str = mod_string,

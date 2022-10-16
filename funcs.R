@@ -52,13 +52,16 @@ gg_resid = function(res, normalize=TRUE) {
     mutate(obs=seq_along(resid)) %>%
     ggplot(aes(x=obs, y=resid)) +
     geom_point() + 
+    ggtitle("Residuals") +
+    xlab("Feed") +
+    ylab("Residual") + 
     geom_smooth()
 }
 
 gg_resid.cat = function(lab, res, normalize=FALSE) {
   tibble(
     label=lab,
-    resid=res
+    resid=get_resid(res, normalize)
   ) %>%
     ggplot(aes(x=label, y=resid, group=label)) +
     geom_boxplot() + 
